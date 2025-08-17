@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import SudokuCell from './SudokuCell';
 import NumberInput from './NumberInput';
 import type { Game } from '../../types';
@@ -15,21 +15,25 @@ const SudokuBoard: React.FC<SudokuBoardProps> = ({ game, onGameUpdate, onGameCom
   const [currentBoard, setCurrentBoard] = useState<number[][]>(game.current_state);
   const [originalBoard] = useState<number[][]>(game.puzzle_data);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
-  const [invalidCells, setInvalidCells] = useState<Set<string>>(new Set());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastGameId, setLastGameId] = useState<number>(game.id);
+  
+  const invalidCells = useMemo(() => getInvalidCells(currentBoard), [currentBoard]);
   
   const initialBoardRef = useRef<number[][]>(game.current_state);
-  const debouncedBoard = useDebounce(currentBoard, 2000);
+  const debouncedBoard = useDebounce(currentBoard, 500);
 
   useEffect(() => {
-    setCurrentBoard(game.current_state);
-    initialBoardRef.current = game.current_state;
-    setHasUnsavedChanges(false);
-  }, [game.current_state]);
+    // Only update the board if we switched to a different game
+    // Don't reset when API response comes back from our own save
+    if (game.id !== lastGameId) {
+      setCurrentBoard(game.current_state);
+      initialBoardRef.current = game.current_state;
+      setHasUnsavedChanges(false);
+      setLastGameId(game.id);
+    }
+  }, [game.current_state, game.id, lastGameId]);
 
-  useEffect(() => {
-    setInvalidCells(getInvalidCells(currentBoard));
-  }, [currentBoard]);
 
   useEffect(() => {
     if (hasUnsavedChanges && debouncedBoard !== initialBoardRef.current) {

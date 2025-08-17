@@ -134,7 +134,7 @@
   font-weight: bold;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.1s ease;
+  transition: background-color 0.05s ease;
 }
 
 .sudoku-cell:hover:not(.sudoku-cell--original) {
@@ -154,11 +154,13 @@
 
 .sudoku-cell--selected {
   background-color: #bbdefb !important;
+  transition: none;
 }
 
 .sudoku-cell--invalid {
   background-color: #ffebee !important;
   color: #d32f2f !important;
+  transition: none;
 }
 
 .sudoku-cell--right-border {

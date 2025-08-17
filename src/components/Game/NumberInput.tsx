@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 
 interface NumberInputProps {
   onNumberSelect: (number: number) => void;
@@ -6,6 +6,28 @@ interface NumberInputProps {
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({ onNumberSelect, onClear }) => {
+  const lastClickTimeRef = useRef<number>(0);
+  
+  const handleNumberClick = useCallback((number: number) => {
+    const now = Date.now();
+    // Prevent clicks within 100ms of each other
+    if (now - lastClickTimeRef.current < 100) {
+      return;
+    }
+    lastClickTimeRef.current = now;
+    onNumberSelect(number);
+  }, [onNumberSelect]);
+
+  const handleClearClick = useCallback(() => {
+    const now = Date.now();
+    // Prevent clicks within 100ms of each other
+    if (now - lastClickTimeRef.current < 100) {
+      return;
+    }
+    lastClickTimeRef.current = now;
+    onClear();
+  }, [onClear]);
+
   return (
     <div className="number-input">
       <div className="number-input__numbers">
@@ -13,7 +35,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ onNumberSelect, onClear }) =>
           <button
             key={number}
             className="number-input__button"
-            onClick={() => onNumberSelect(number)}
+            onClick={() => handleNumberClick(number)}
             aria-label={`Enter number ${number}`}
           >
             {number}
@@ -22,7 +44,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ onNumberSelect, onClear }) =>
       </div>
       <button
         className="number-input__clear"
-        onClick={onClear}
+        onClick={handleClearClick}
         aria-label="Clear cell"
       >
         Clear
